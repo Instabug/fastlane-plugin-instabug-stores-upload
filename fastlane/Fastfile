@@ -1,0 +1,27 @@
+# Fastfile for Instabug Stores Upload Plugin
+
+# Example lane for uploading to App Store with Instabug reporting
+lane :upload_to_app_store do |options|
+  branch_name = options[:branch_name]
+  
+  instabug_upload_to_app_store(
+    branch_name: branch_name,
+    instabug_api_key: ENV["INSTABUG_API_KEY"],
+    # All standard upload_to_app_store parameters are supported
+    ipa: "path/to/your/app.ipa",
+    skip_waiting_for_build_processing: true
+  )
+end
+
+# Example lane for uploading to Play Store with Instabug reporting  
+lane :upload_to_play_store do |options|
+  branch_name = options[:branch_name] 
+  
+  instabug_upload_to_play_store(
+    branch_name: branch_name,
+    instabug_api_key: ENV["INSTABUG_API_KEY"],
+    # All standard upload_to_play_store parameters are supported
+    aab: "path/to/your/app.aab",
+    track: "internal"
+  )
+end
