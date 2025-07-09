@@ -11,5 +11,8 @@ end
 
 require 'fastlane' # to import the Action super class
 require 'fastlane/plugin/instabug_stores_upload' # import the actual plugin
+require 'webmock/rspec'
 
 Fastlane.load_actions # load other actions (in case your plugin calls other actions or shared values)
+
+WebMock.disable_net_connect!(allow_localhost: true)
