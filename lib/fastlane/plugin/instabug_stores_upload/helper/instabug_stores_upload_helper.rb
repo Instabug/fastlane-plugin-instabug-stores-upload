@@ -15,16 +15,16 @@ module Fastlane
         UI.message("Hello from the instabug_stores_upload plugin helper!")
       end
 
-      def self.report_status(branch_name:, api_key:, status:)
+      def self.report_status(branch_name:, api_key:, status:, step:)
         return unless branch_name.start_with?('crash-fix/instabug-crash-')
         
-        UI.message("📡 Reporting upload status to Instabug for #{branch_name}/#{status}")
+        UI.message("📡 Reporting #{step} status to Instabug for #{branch_name}/#{status}")
         
         make_api_request(
           branch_name: branch_name,
           status: status,
           api_key: api_key,
-          step: "upload_to_the_store"
+          step: step
         )
       end
 

@@ -21,7 +21,8 @@ module Fastlane
           Helper::InstabugStoresUploadHelper.report_status(
             branch_name: branch_name,
             api_key: instabug_api_key,
-            status: "inprogress"
+            status: "inprogress",
+            step: "upload_to_the_store"
           )
 
           # Execute the actual upload to App Store
@@ -31,7 +32,8 @@ module Fastlane
           Helper::InstabugStoresUploadHelper.report_status(
             branch_name: branch_name,
             api_key: instabug_api_key,
-            status: "success"
+            status: "success",
+            step: "upload_to_the_store"
           )
 
           UI.success("App Store upload completed successfully!")
@@ -43,7 +45,8 @@ module Fastlane
           Helper::InstabugStoresUploadHelper.report_status(
             branch_name: branch_name,
             api_key: instabug_api_key,
-            status: "failure"
+            status: "failure",
+            step: "upload_to_the_store"
           )
           raise e
         end

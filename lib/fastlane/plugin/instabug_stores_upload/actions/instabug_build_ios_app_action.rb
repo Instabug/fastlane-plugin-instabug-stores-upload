@@ -3,58 +3,57 @@ require_relative '../helper/instabug_stores_upload_helper'
 
 module Fastlane
   module Actions
-    class InstabugUploadToPlayStoreAction < Action
+    class InstabugBuildIosAppAction < Action
       def self.run(params)
-        UI.message("Starting Instabug Play Store upload...")
+        UI.message("Starting Instabug iOS build...")
         
         # Extract Instabug-specific parameters
         branch_name = params.delete(:branch_name)
         instabug_api_key = params.delete(:instabug_api_key)
-
+        
         # Validate required parameters
         if branch_name.nil? || branch_name.empty?
           UI.user_error!("branch_name is required for Instabug reporting")
         end
-
+        
         begin
-          # Report upload start to Instabug
+          # Report build start to Instabug
           Helper::InstabugStoresUploadHelper.report_status(
             branch_name: branch_name,
             api_key: instabug_api_key,
             status: "inprogress",
-            step: "upload_to_the_store"
+            step: "build_app"
           )
 
-          # Execute the actual upload to Play Store
-          result = Actions::UploadToPlayStoreAction.run(params)
-          
-          # Report upload success to Instabug
+          # Execute the actual iOS build
+          result = Actions::BuildIosAppAction.run(params)
+
+          # Report build success to Instabug
           Helper::InstabugStoresUploadHelper.report_status(
             branch_name: branch_name,
             api_key: instabug_api_key,
             status: "success",
-            step: "upload_to_the_store"
+            step: "build_app"
           )
-          
-          UI.success("Play Store upload completed successfully!")
-          result
-          
-        rescue => e
-          UI.error("Play Store upload failed: #{e.message}")
 
-          # Report upload failure to Instabug
+          UI.success("iOS build completed successfully!")
+          result
+        rescue => e
+          UI.error("iOS build failed: #{e.message}")
+
+          # Report build failure to Instabug
           Helper::InstabugStoresUploadHelper.report_status(
             branch_name: branch_name,
             api_key: instabug_api_key,
             status: "failure",
-            step: "upload_to_the_store"
+            step: "build_app"
           )
           raise e
         end
       end
 
       def self.description
-        "Upload to Play Store with Instabug metadata reporting"
+        "Build iOS app with Instabug metadata reporting"
       end
 
       def self.authors
@@ -62,34 +61,34 @@ module Fastlane
       end
 
       def self.return_value
-        "Returns the result from upload_to_play_store action"
+        "Returns the result from build_ios_app action"
       end
 
       def self.details
-        "This action wraps the standard upload_to_play_store action and adds Instabug-specific metadata reporting. It tracks upload events per branch and provides better observability for engineering teams."
+        "This action wraps the standard build_ios_app action and adds Instabug-specific metadata reporting. It tracks build events per branch and provides better observability for engineering teams."
       end
 
       def self.available_options
-        # Start with the original upload_to_play_store options
-        options = Actions::UploadToPlayStoreAction.available_options
+        # Start with the original build_ios_app options
+        options = Actions::BuildIosAppAction.available_options
         
         # Add Instabug-specific options
         instabug_options = [
           FastlaneCore::ConfigItem.new(
             key: :branch_name,
             env_name: "INSTABUG_BRANCH_NAME",
-            description: "The branch name for tracking uploads",
+            description: "The branch name for tracking builds",
             optional: false,
             type: String
           ),
           FastlaneCore::ConfigItem.new(
             key: :instabug_api_key,
             env_name: "INSTABUG_API_KEY",
-            description: "Instabug API key for reporting upload events",
+            description: "Instabug API key for reporting build events",
             optional: false,
             type: String,
             sensitive: true
-          )
+          ) 
         ]
         
         # Combine both sets of options
@@ -97,24 +96,24 @@ module Fastlane
       end
 
       def self.is_supported?(platform)
-        platform == :android
+        [:ios, :mac].include?(platform)
       end
 
       def self.example_code
         [
-          'instabug_upload_to_play_store(
+          'instabug_build_ios_app(
             branch_name: "main",
             instabug_api_key: "your-api-key",
-            package_name: "com.example.app",
-            aab: "path/to/your.aab",
-            track: "internal",
-            skip_upload_screenshots: true
+            workspace: "MyApp.xcworkspace",
+            scheme: "MyApp",
+            export_method: "app-store",
+            configuration: "Release"
           )'
         ]
       end
 
       def self.category
-        :google_play_console
+        :building
       end
     end
   end
