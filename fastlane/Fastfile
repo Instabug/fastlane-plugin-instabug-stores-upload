@@ -1,5 +1,39 @@
 # Fastfile for Instabug Stores Upload Plugin
 
+# Example lane for building iOS app with Instabug reporting
+lane :build_ios_app do |options|
+  branch_name = options[:branch_name]
+  
+  instabug_build_ios_app(
+    branch_name: branch_name,
+    instabug_api_key: ENV["INSTABUG_API_KEY"],
+    # All standard build_ios_app parameters are supported
+    workspace: "MyApp.xcworkspace",
+    scheme: "MyApp",
+    export_method: "app-store",
+    configuration: "Release"
+  )
+end
+
+# Example lane for building Android app with Instabug reporting
+lane :build_android_app do |options|
+  branch_name = options[:branch_name]
+  
+  instabug_build_android_app(
+    branch_name: branch_name,
+    instabug_api_key: ENV["INSTABUG_API_KEY"],
+    # All standard gradle parameters are supported
+    task: "assembleRelease",
+    project_dir: "android/",
+    properties: {
+      "android.injected.signing.store.file" => "keystore.jks",
+      "android.injected.signing.store.password" => ENV["KEYSTORE_PASSWORD"],
+      "android.injected.signing.key.alias" => "key0",
+      "android.injected.signing.key.password" => ENV["KEY_PASSWORD"]
+    }
+  )
+end
+
 # Example lane for uploading to App Store with Instabug reporting
 lane :upload_to_app_store do |options|
   branch_name = options[:branch_name]
