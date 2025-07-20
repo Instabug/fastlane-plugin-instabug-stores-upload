@@ -21,7 +21,8 @@ module Fastlane
           Helper::InstabugStoresUploadHelper.report_status(
             branch_name: branch_name,
             api_key: instabug_api_key,
-            status: "inprogress"
+            status: "inprogress",
+            step: "upload_to_the_store"
           )
 
           # Execute the actual upload to Play Store
@@ -31,21 +32,23 @@ module Fastlane
           Helper::InstabugStoresUploadHelper.report_status(
             branch_name: branch_name,
             api_key: instabug_api_key,
-            status: "success"
+            status: "success",
+            step: "upload_to_the_store"
           )
           
           UI.success("Play Store upload completed successfully!")
           result
           
         rescue => e
+          UI.error("Play Store upload failed: #{e.message}")
+
           # Report upload failure to Instabug
           Helper::InstabugStoresUploadHelper.report_status(
             branch_name: branch_name,
             api_key: instabug_api_key,
-            status: "failure"
+            status: "failure",
+            step: "upload_to_the_store"
           )
-          
-          UI.error("Play Store upload failed: #{e.message}")
           raise e
         end
       end
