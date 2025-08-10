@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rubocop', '1.50.2'
+  spec.add_development_dependency 'rubocop-performance'
   spec.add_development_dependency 'rubocop-require_tools'
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'fastlane', '~> 2.228.0'

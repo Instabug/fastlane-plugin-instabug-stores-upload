@@ -3,7 +3,7 @@ require:
 - rubocop/require_tools
 - rubocop-performance
 AllCops:
-  TargetRubyVersion: 2.6
+  TargetRubyVersion: 3.2.2
   NewCops: enable
   Include:
   - "**/*.rb"
@@ -70,6 +70,7 @@ Require/MissingRequireStatement:
   - "**/Rakefile"
   - fastlane/**/*
   - supply/**/*
+  - "lib/fastlane/plugin/**/*.rb"
 Layout/FirstHashElementIndentation:
   Enabled: false
 Layout/HashAlignment:
@@ -86,6 +87,8 @@ Style/MixinGrouping:
   Exclude:
   - "**/spec/**/*"
 Lint/SuppressedException:
+  Enabled: false
+Lint/IneffectiveAccessModifier:
   Enabled: false
 Lint/UnusedBlockArgument:
   Enabled: false
@@ -120,6 +123,8 @@ Layout/LineLength:
   Max: 370
 Metrics/ParameterLists:
   Max: 17
+Metrics/PerceivedComplexity:
+  Max: 10
 Style/GuardClause:
   Enabled: false
 Style/StringLiterals:
@@ -192,5 +197,4 @@ Bundler/OrderedGems:
   Enabled: true
   TreatCommentsAsGroupSeparators: false
 Gemspec/DevelopmentDependencies:
-  Enabled: true
-  EnforcedStyle: Gemfile
+  Enabled: false
