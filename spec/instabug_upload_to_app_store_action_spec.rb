@@ -32,7 +32,9 @@ describe Fastlane::Actions::InstabugUploadToAppStoreAction do
             body: {
               branch_name: 'crash-fix/instabug-crash-123',
               status: 'inprogress',
-              step: 'upload_to_the_store'
+              step: 'upload_to_the_store',
+              extras: {},
+              error_message: nil
             }.to_json,
             headers: {
               'Content-Type' => 'application/json',
@@ -46,7 +48,9 @@ describe Fastlane::Actions::InstabugUploadToAppStoreAction do
             body: {
               branch_name: 'crash-fix/instabug-crash-123',
               status: 'success',
-              step: 'upload_to_the_store'
+              step: 'upload_to_the_store',
+              extras: {},
+              error_message: nil
             }.to_json,
             headers: {
               'Content-Type' => 'application/json',
@@ -63,16 +67,18 @@ describe Fastlane::Actions::InstabugUploadToAppStoreAction do
         expect(Fastlane::Actions::UploadToAppStoreAction).to receive(:run)
           .and_raise(error)
 
-        expect {
+        expect do
           described_class.run(valid_params)
-        }.to raise_error(StandardError, 'Upload failed')
+        end.to raise_error(StandardError, 'Upload failed')
 
         expect(WebMock).to have_requested(:patch, api_endpoint)
           .with(
             body: {
               branch_name: 'crash-fix/instabug-crash-123',
               status: 'failure',
-              step: 'upload_to_the_store'
+              step: 'upload_to_the_store',
+              extras: {},
+              error_message: 'Upload failed'
             }.to_json
           )
       end
@@ -82,9 +88,9 @@ describe Fastlane::Actions::InstabugUploadToAppStoreAction do
       it 'raises user error' do
         params = valid_params.merge(branch_name: nil)
 
-        expect {
+        expect do
           described_class.run(params)
-        }.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
+        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
       end
     end
 
@@ -92,16 +98,16 @@ describe Fastlane::Actions::InstabugUploadToAppStoreAction do
       it 'raises user error' do
         params = valid_params.merge(branch_name: '')
 
-        expect {
+        expect do
           described_class.run(params)
-        }.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
+        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
       end
     end
 
     context 'when branch name does not match instabug pattern' do
       it 'does not make API calls but still runs upload' do
         params = valid_params.merge(branch_name: 'feature/new-feature')
-        
+
         expect(Fastlane::Actions::UploadToAppStoreAction).to receive(:run)
           .and_return('upload_result')
 
@@ -128,4 +134,4 @@ describe Fastlane::Actions::InstabugUploadToAppStoreAction do
       expect(described_class.category).to eq(:app_store_connect)
     end
   end
-end 
+end

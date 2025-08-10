@@ -17,12 +17,12 @@ Gem::Specification.new do |spec|
   spec.metadata['rubygems_mfa_required'] = 'true'
   spec.required_ruby_version = '>= 3.2.2'
 
-  spec.add_development_dependency 'bundler'
-  spec.add_development_dependency 'rspec'
-  spec.add_development_dependency 'rake'
-  spec.add_development_dependency 'rubocop', '1.50.2'
-  spec.add_development_dependency 'rubocop-performance'
-  spec.add_development_dependency 'rubocop-require_tools'
-  spec.add_development_dependency 'simplecov'
-  spec.add_development_dependency 'fastlane', '~> 2.228.0'
+  spec.add_development_dependency('bundler')
+  spec.add_development_dependency('fastlane', '~> 2.228.0')
+  spec.add_development_dependency('rake')
+  spec.add_development_dependency('rspec')
+  spec.add_development_dependency('rubocop', '1.50.2')
+  spec.add_development_dependency('rubocop-performance')
+  spec.add_development_dependency('rubocop-require_tools')
+  spec.add_development_dependency('simplecov')
 end
