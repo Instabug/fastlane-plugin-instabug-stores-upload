@@ -39,7 +39,7 @@ describe Fastlane::Actions::InstabugUploadToAppStoreAction do
             headers: {
               'Content-Type' => 'application/json',
               'Authorization' => 'Bearer test-api-key',
-              'User-Agent' => 'fastlane-plugin-instabug-stores-upload'
+              'User-Agent' => 'fastlane-plugin-instabug_stores_upload'
             }
           ).once
 
@@ -55,7 +55,7 @@ describe Fastlane::Actions::InstabugUploadToAppStoreAction do
             headers: {
               'Content-Type' => 'application/json',
               'Authorization' => 'Bearer test-api-key',
-              'User-Agent' => 'fastlane-plugin-instabug-stores-upload'
+              'User-Agent' => 'fastlane-plugin-instabug_stores_upload'
             }
           ).once
       end

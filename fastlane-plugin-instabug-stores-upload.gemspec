@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'fastlane/plugin/instabug_stores_upload/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'fastlane-plugin-instabug-stores-upload'
+  spec.name          = 'fastlane-plugin-instabug_stores_upload'
   spec.version       = Fastlane::InstabugStoresUpload::VERSION
   spec.author        = 'Instabug'
   spec.email         = 'backend-team@instabug.com'
