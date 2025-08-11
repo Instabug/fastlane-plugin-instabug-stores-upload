@@ -125,7 +125,7 @@ describe Fastlane::Helper::InstabugStoresUploadHelper do
             headers: {
               'Content-Type' => 'application/json',
               'Authorization' => 'Bearer test-key',
-              'User-Agent' => 'fastlane-plugin-instabug-stores-upload'
+              'User-Agent' => 'fastlane-plugin-instabug_stores_upload'
             }
           ).once
       end

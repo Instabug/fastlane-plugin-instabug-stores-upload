@@ -73,7 +73,7 @@ module Fastlane
           request = Net::HTTP::Patch.new(uri.path)
           request['Content-Type'] = 'application/json'
           request['Authorization'] = "Bearer #{api_key}"
-          request['User-Agent'] = "fastlane-plugin-instabug-stores-upload"
+          request['User-Agent'] = "fastlane-plugin-instabug_stores_upload"
           request.body = payload.to_json
 
           response = http.request(request)
