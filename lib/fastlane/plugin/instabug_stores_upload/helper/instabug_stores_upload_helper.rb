@@ -10,9 +10,28 @@ module Fastlane
     class InstabugStoresUploadHelper
       # Default Base URL for Instabug API
       DEFAULT_INSTABUG_API_BASE_URL = "https://api.instabug.com".freeze
+      INSTABUG_KEYS = %i[branch_name instabug_api_key instabug_api_base_url].freeze
 
       def self.show_message
         UI.message("Hello from the instabug_stores_upload plugin helper!")
+      end
+
+      # Filters out Instabug-specific parameters from the params configuration
+      # and returns a new FastlaneCore::Configuration object with only the target action's parameters
+      def self.filter_instabug_params(params, target_action_class)
+        filtered_config = {}
+        params.available_options.each do |option|
+          key = option.key
+          unless INSTABUG_KEYS.include?(key)
+            value = params[key]
+            filtered_config[key] = value if value
+          end
+        end
+
+        FastlaneCore::Configuration.create(
+          target_action_class.available_options,
+          filtered_config
+        )
       end
 
       def self.report_status(branch_name:, api_key:, status:, step:, extras: {}, error_message: nil)

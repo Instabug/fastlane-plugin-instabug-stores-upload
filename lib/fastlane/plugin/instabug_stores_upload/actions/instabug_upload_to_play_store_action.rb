@@ -8,13 +8,16 @@ module Fastlane
         UI.message("Starting Instabug Play Store upload...")
 
         # Extract Instabug-specific parameters
-        branch_name = params.delete(:branch_name)
-        instabug_api_key = params.delete(:instabug_api_key)
+        branch_name = params[:branch_name]
+        instabug_api_key = params[:instabug_api_key]
 
         # Validate required parameters
         if branch_name.nil? || branch_name.empty?
           UI.user_error!("branch_name is required for Instabug reporting")
         end
+
+        # Filter out Instabug-specific parameters before passing to upload_to_play_store
+        filtered_params = Helper::InstabugStoresUploadHelper.filter_instabug_params(params, Actions::UploadToPlayStoreAction)
 
         begin
           # Report upload start to Instabug
@@ -26,7 +29,7 @@ module Fastlane
           )
 
           # Execute the actual upload to Play Store
-          result = Actions::UploadToPlayStoreAction.run(params)
+          result = Actions::UploadToPlayStoreAction.run(filtered_params)
 
           # Report upload success to Instabug
           Helper::InstabugStoresUploadHelper.report_status(
