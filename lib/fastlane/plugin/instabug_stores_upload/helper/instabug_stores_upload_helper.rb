@@ -30,25 +30,6 @@ module Fastlane
         )
       end
 
-      # This helper method provides a clean and prioritized way to get the Android build output.
-      # It checks for the most common output types in a specific order.
-      # This is used to get the build path for the Android build artifact.
-      def self.fetch_android_build_path(lane_context)
-        all_aab_paths = lane_context[Actions::SharedValues::GRADLE_ALL_AAB_OUTPUT_PATHS]
-        return all_aab_paths if all_aab_paths && !all_aab_paths.empty?
-
-        aab_path = lane_context[Actions::SharedValues::GRADLE_AAB_OUTPUT_PATH]
-        return aab_path if aab_path && !aab_path.empty?
-
-        all_apk_paths = lane_context[Actions::SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS]
-        return all_apk_paths if all_apk_paths && !all_apk_paths.empty?
-
-        apk_path = lane_context[Actions::SharedValues::GRADLE_APK_OUTPUT_PATH]
-        return apk_path if apk_path && !apk_path.empty?
-
-        return nil
-      end
-
       def self.make_api_request(branch_name:, status:, api_key:, step:, extras: {}, error_message: nil)
         return unless api_key
 

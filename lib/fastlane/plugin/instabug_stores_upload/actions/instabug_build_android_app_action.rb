@@ -35,7 +35,7 @@ module Fastlane
           build_time = (Time.now - build_start_time).round
 
           # Extract Android build path (APK or AAB)
-          build_path = Helper::InstabugStoresUploadHelper.fetch_android_build_path(Actions.lane_context)
+          build_path = fetch_android_build_path(Actions.lane_context)
 
           if build_path.nil? || build_path.empty?
             UI.user_error!("Could not find any generated APK or AAB. Please check your gradle settings.")
@@ -146,6 +146,24 @@ module Fastlane
 
       def self.category
         :building
+      end
+
+      # This helper method provides a clean and prioritized way to get the Android build output.
+      # It checks for the most common output types in a specific order.
+      # This is used to get the build path for the Android build artifact.
+      def self.fetch_android_build_path(lane_context)
+        build_keys = [
+          SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS,
+          SharedValues::GRADLE_APK_OUTPUT_PATH,
+          SharedValues::GRADLE_ALL_AAB_OUTPUT_PATHS,
+          SharedValues::GRADLE_AAB_OUTPUT_PATH
+        ]
+        build_keys.each do |build_key|
+          build_path = lane_context[build_key]
+          return build_path if build_path && !build_path.empty?
+        end
+
+        nil
       end
     end
   end

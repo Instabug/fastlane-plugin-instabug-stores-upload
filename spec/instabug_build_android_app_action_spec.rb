@@ -139,6 +139,58 @@ describe Fastlane::Actions::InstabugBuildAndroidAppAction do
     end
   end
 
+  describe '.fetch_android_build_path' do
+    let(:lane_context) { {} }
+
+    context 'when all AAB output paths are available' do
+      it 'returns all AAB paths' do
+        lane_context[Fastlane::Actions::SharedValues::GRADLE_ALL_AAB_OUTPUT_PATHS] = ['/path/to/app1.aab', '/path/to/app2.aab']
+
+        result = described_class.fetch_android_build_path(lane_context)
+
+        expect(result).to eq(['/path/to/app1.aab', '/path/to/app2.aab'])
+      end
+    end
+
+    context 'when single AAB output path is available' do
+      it 'returns single AAB path' do
+        lane_context[Fastlane::Actions::SharedValues::GRADLE_AAB_OUTPUT_PATH] = '/path/to/app.aab'
+
+        result = described_class.fetch_android_build_path(lane_context)
+
+        expect(result).to eq('/path/to/app.aab')
+      end
+    end
+
+    context 'when all APK output paths are available' do
+      it 'returns all APK paths' do
+        lane_context[Fastlane::Actions::SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS] = ['/path/to/app1.apk', '/path/to/app2.apk']
+
+        result = described_class.fetch_android_build_path(lane_context)
+
+        expect(result).to eq(['/path/to/app1.apk', '/path/to/app2.apk'])
+      end
+    end
+
+    context 'when single APK output path is available' do
+      it 'returns single APK path' do
+        lane_context[Fastlane::Actions::SharedValues::GRADLE_APK_OUTPUT_PATH] = '/path/to/app.apk'
+
+        result = described_class.fetch_android_build_path(lane_context)
+
+        expect(result).to eq('/path/to/app.apk')
+      end
+    end
+
+    context 'when no build paths are available' do
+      it 'returns nil' do
+        result = described_class.fetch_android_build_path(lane_context)
+
+        expect(result).to be_nil
+      end
+    end
+  end
+
   describe 'metadata' do
     it 'has correct description' do
       expect(described_class.description).to eq('Build Android app with Instabug metadata reporting')
