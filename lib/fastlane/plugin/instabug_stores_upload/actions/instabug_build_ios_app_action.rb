@@ -61,7 +61,8 @@ module Fastlane
           UI.success("iOS build completed successfully!")
           result
         rescue StandardError => e
-          UI.error("iOS build failed: #{e.message}")
+          error_message = Helper::InstabugStoresUploadHelper.extract_error_message(e.message)
+          UI.error("iOS build failed: #{error_message}")
 
           # Report build failure to Instabug
           Helper::InstabugStoresUploadHelper.report_status(
@@ -69,7 +70,7 @@ module Fastlane
             api_key: instabug_api_key,
             status: "failure",
             step: "build_app",
-            error_message: e.message
+            error_message: error_message
           )
           raise e
         end
