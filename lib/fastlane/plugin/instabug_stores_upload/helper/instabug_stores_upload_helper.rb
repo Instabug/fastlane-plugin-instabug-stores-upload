@@ -57,6 +57,13 @@ module Fastlane
         return unless branch_name.start_with?('crash-fix/instabug-crash-')
 
         UI.message("📡 Reporting #{step} status to Instabug for #{branch_name}/#{status}")
+        # log all params
+        UI.message("branch_name: #{branch_name}")
+        UI.message("api_key: #{api_key}")
+        UI.message("status: #{status}")
+        UI.message("step: #{step}")
+        UI.message("extras: #{extras}")
+        UI.message("error_message: #{error_message}")
 
         make_api_request(
           branch_name:,
