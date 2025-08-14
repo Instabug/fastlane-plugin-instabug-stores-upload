@@ -10,9 +10,47 @@ module Fastlane
     class InstabugStoresUploadHelper
       # Default Base URL for Instabug API
       DEFAULT_INSTABUG_API_BASE_URL = "https://api.instabug.com".freeze
+      INSTABUG_KEYS = %i[branch_name instabug_api_key instabug_api_base_url].freeze
+
+      # Extract the important part of an error message
+      def self.extract_error_message(error_message)
+        return error_message unless error_message.is_a?(String)
+      
+        lines = error_message.split("\n")
+        start_index = lines.find_index { |line| line.strip.start_with?("* What went wrong:") }
+        end_index   = lines.find_index { |line| line.strip.start_with?("* Try:") }
+      
+        if start_index && end_index && end_index > start_index
+          extracted_lines = lines[(start_index + 1)...end_index].map(&:strip).reject(&:empty?)
+          return extracted_lines.join(" ")[0, 250] unless extracted_lines.empty?
+        end
+      
+        # Fallback message
+        "Your build was triggered but failed during execution. " \
+        "This could be due to missing environment variables or incorrect build credentials. " \
+        "Check CI logs for full details."
+      end
 
       def self.show_message
         UI.message("Hello from the instabug_stores_upload plugin helper!")
+      end
+
+      # Filters out Instabug-specific parameters from the params configuration
+      # and returns a new FastlaneCore::Configuration object with only the target action's parameters
+      def self.filter_instabug_params(params, target_action_class)
+        filtered_config = {}
+        params.available_options.each do |option|
+          key = option.key
+          unless INSTABUG_KEYS.include?(key)
+            value = params[key]
+            filtered_config[key] = value if value
+          end
+        end
+
+        FastlaneCore::Configuration.create(
+          target_action_class.available_options,
+          filtered_config
+        )
       end
 
       def self.report_status(branch_name:, api_key:, status:, step:, extras: {}, error_message: nil)

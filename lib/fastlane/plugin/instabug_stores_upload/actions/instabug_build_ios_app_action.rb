@@ -8,13 +8,16 @@ module Fastlane
         UI.message("Starting Instabug iOS build...")
 
         # Extract Instabug-specific parameters
-        branch_name = params.delete(:branch_name)
-        instabug_api_key = params.delete(:instabug_api_key)
+        branch_name = params[:branch_name]
+        instabug_api_key = params[:instabug_api_key]
 
         # Validate required parameters
         if branch_name.nil? || branch_name.empty?
           UI.user_error!("branch_name is required for Instabug reporting")
         end
+
+        # Filter out Instabug-specific parameters before passing to build_ios_app
+        filtered_params = Helper::InstabugStoresUploadHelper.filter_instabug_params(params, Actions::BuildIosAppAction)
 
         begin
           # Report build start to Instabug
@@ -29,7 +32,7 @@ module Fastlane
           build_start_time = Time.now
 
           # Execute the actual iOS build
-          result = Actions::BuildIosAppAction.run(params)
+          result = Actions::BuildIosAppAction.run(filtered_params)
 
           # Calculate build time in seconds
           build_time = (Time.now - build_start_time).round
@@ -58,7 +61,8 @@ module Fastlane
           UI.success("iOS build completed successfully!")
           result
         rescue StandardError => e
-          UI.error("iOS build failed: #{e.message}")
+          error_message = Helper::InstabugStoresUploadHelper.extract_error_message(e.message)
+          UI.error("iOS build failed: #{error_message}")
 
           # Report build failure to Instabug
           Helper::InstabugStoresUploadHelper.report_status(
@@ -66,7 +70,7 @@ module Fastlane
             api_key: instabug_api_key,
             status: "failure",
             step: "build_app",
-            error_message: e.message
+            error_message: error_message
           )
           raise e
         end
