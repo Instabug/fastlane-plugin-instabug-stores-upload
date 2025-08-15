@@ -54,7 +54,7 @@ module Fastlane
             step: "build_app",
             extras: {
               build_time:,
-              build_path:
+              build_path: Array(build_path)
             }
           )
 

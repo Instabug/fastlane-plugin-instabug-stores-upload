@@ -41,16 +41,10 @@ module Fastlane
         filtered_config = {}
         params.available_options.each do |option|
           key = option.key
-          unless INSTABUG_KEYS.include?(key)
-            value = params[key]
-            filtered_config[key] = value if value
-          end
+          filtered_config[key] = params[key] unless INSTABUG_KEYS.include?(key)
         end
 
-        FastlaneCore::Configuration.create(
-          target_action_class.available_options,
-          filtered_config
-        )
+        FastlaneCore::Configuration.create(target_action_class.available_options, filtered_config)
       end
 
       def self.report_status(branch_name:, api_key:, status:, step:, extras: {}, error_message: nil)
