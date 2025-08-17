@@ -20,7 +20,12 @@ describe Fastlane::Actions::InstabugBuildIosAppAction do
 
   describe '#run' do
     context 'when build succeeds' do
-      it 'reports inprogress, calls build action, and reports success' do
+      it 'reports inprogress, calls build action, and reports success with timing and path' do
+        # Mock the lane context to return an IPA path
+        allow(Fastlane::Actions).to receive(:lane_context).and_return({
+          Fastlane::Actions::SharedValues::IPA_OUTPUT_PATH => '/path/to/app.ipa'
+        })
+
         expect(Fastlane::Actions::BuildIosAppAction).to receive(:run)
           .with(hash_including(workspace: 'Test.xcworkspace', scheme: 'Test', export_method: 'app-store'))
           .and_return('build_result')
@@ -33,28 +38,47 @@ describe Fastlane::Actions::InstabugBuildIosAppAction do
             body: {
               branch_name: 'crash-fix/instabug-crash-123',
               status: 'inprogress',
-              step: 'build_app'
+              step: 'build_app',
+              extras: {},
+              error_message: nil
             }.to_json,
             headers: {
               'Content-Type' => 'application/json',
               'Authorization' => 'Bearer test-api-key',
-              'User-Agent' => 'fastlane-plugin-instabug-stores-upload'
+              'User-Agent' => 'fastlane-plugin-instabug_stores_upload'
             }
           ).once
 
         expect(WebMock).to have_requested(:patch, api_endpoint)
-          .with(
-            body: {
-              branch_name: 'crash-fix/instabug-crash-123',
-              status: 'success',
-              step: 'build_app'
-            }.to_json,
-            headers: {
-              'Content-Type' => 'application/json',
-              'Authorization' => 'Bearer test-api-key',
-              'User-Agent' => 'fastlane-plugin-instabug-stores-upload'
-            }
-          ).once
+          .with { |req|
+            body = JSON.parse(req.body)
+            body['status'] == 'success' &&
+              body['branch_name'] == 'crash-fix/instabug-crash-123' &&
+              body['step'] == 'build_app' &&
+              body['extras']['build_path'] == '/path/to/app.ipa' &&
+              body['extras']['build_time'].kind_of?(Integer)
+          }.once
+      end
+
+      it 'handles missing IPA path gracefully' do
+        # Mock empty lane context
+        allow(Fastlane::Actions).to receive(:lane_context).and_return({})
+
+        expect(Fastlane::Actions::BuildIosAppAction).to receive(:run)
+          .and_return('build_result')
+
+        result = described_class.run(valid_params)
+
+        expect(result).to eq('build_result')
+        expect(WebMock).to have_requested(:patch, api_endpoint)
+          .with { |req|
+            body = JSON.parse(req.body)
+            body['status'] == 'success' &&
+              body['branch_name'] == 'crash-fix/instabug-crash-123' &&
+              body['step'] == 'build_app' &&
+              body['extras']['build_path'].nil? &&
+              body['extras']['build_time'].kind_of?(Integer)
+          }.once
       end
     end
 
@@ -64,16 +88,18 @@ describe Fastlane::Actions::InstabugBuildIosAppAction do
         expect(Fastlane::Actions::BuildIosAppAction).to receive(:run)
           .and_raise(error)
 
-        expect {
+        expect do
           described_class.run(valid_params)
-        }.to raise_error(StandardError, 'Build failed')
+        end.to raise_error(StandardError, 'Build failed')
 
         expect(WebMock).to have_requested(:patch, api_endpoint)
           .with(
             body: {
               branch_name: 'crash-fix/instabug-crash-123',
               status: 'failure',
-              step: 'build_app'
+              step: 'build_app',
+              extras: {},
+              error_message: 'Build failed'
             }.to_json
           )
       end
@@ -83,9 +109,9 @@ describe Fastlane::Actions::InstabugBuildIosAppAction do
       it 'raises user error' do
         params = valid_params.merge(branch_name: nil)
 
-        expect {
+        expect do
           described_class.run(params)
-        }.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
+        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
       end
     end
 
@@ -93,16 +119,16 @@ describe Fastlane::Actions::InstabugBuildIosAppAction do
       it 'raises user error' do
         params = valid_params.merge(branch_name: '')
 
-        expect {
+        expect do
           described_class.run(params)
-        }.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
+        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
       end
     end
 
     context 'when branch name does not match instabug pattern' do
       it 'does not make API calls but still runs build' do
         params = valid_params.merge(branch_name: 'feature/new-feature')
-        
+
         expect(Fastlane::Actions::BuildIosAppAction).to receive(:run)
           .and_return('build_result')
 
@@ -129,4 +155,4 @@ describe Fastlane::Actions::InstabugBuildIosAppAction do
       expect(described_class.category).to eq(:building)
     end
   end
-end 
+end

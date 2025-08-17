@@ -6,47 +6,71 @@ module Fastlane
     class InstabugBuildAndroidAppAction < Action
       def self.run(params)
         UI.message("Starting Instabug Android build...")
-        
+
         # Extract Instabug-specific parameters
-        branch_name = params.delete(:branch_name)
-        instabug_api_key = params.delete(:instabug_api_key)
-        
+        branch_name = params[:branch_name]
+        instabug_api_key = params[:instabug_api_key]
+
         # Validate required parameters
         if branch_name.nil? || branch_name.empty?
           UI.user_error!("branch_name is required for Instabug reporting")
         end
-        
+
+        # Filter out Instabug-specific parameters before passing to gradle
+        filtered_params = Helper::InstabugStoresUploadHelper.filter_instabug_params(params, Actions::GradleAction)
+
         begin
           # Report build start to Instabug
           Helper::InstabugStoresUploadHelper.report_status(
-            branch_name: branch_name,
+            branch_name:,
             api_key: instabug_api_key,
             status: "inprogress",
             step: "build_app"
           )
 
+          # Start timing the build
+          build_start_time = Time.now
+
           # Execute the actual Android build using gradle
-          result = Actions::GradleAction.run(params)
+          result = Actions::GradleAction.run(filtered_params)
+
+          # Calculate build time in seconds
+          build_time = (Time.now - build_start_time).round
+
+          # Extract Android build path (APK or AAB)
+          build_path = fetch_android_build_path(Actions.lane_context)
+
+          if build_path.nil? || build_path.empty?
+            UI.user_error!("Could not find any generated APK or AAB. Please check your gradle settings.")
+          else
+            UI.success("Successfully found build artifact(s) at: #{build_path}")
+          end
 
           # Report build success to Instabug
           Helper::InstabugStoresUploadHelper.report_status(
-            branch_name: branch_name,
+            branch_name:,
             api_key: instabug_api_key,
             status: "success",
-            step: "build_app"
+            step: "build_app",
+            extras: {
+              build_time:,
+              build_path: Array(build_path)
+            }
           )
 
           UI.success("Android build completed successfully!")
           result
-        rescue => e
-          UI.error("Android build failed: #{e.message}")
+        rescue StandardError => e
+          error_message = Helper::InstabugStoresUploadHelper.extract_error_message(e.message)
+          UI.error("Android build failed: #{error_message}")
 
           # Report build failure to Instabug
           Helper::InstabugStoresUploadHelper.report_status(
-            branch_name: branch_name,
+            branch_name:,
             api_key: instabug_api_key,
             status: "failure",
-            step: "build_app"
+            step: "build_app",
+            error_message: error_message
           )
           raise e
         end
@@ -71,7 +95,7 @@ module Fastlane
       def self.available_options
         # Start with the original gradle options
         options = Actions::GradleAction.available_options
-        
+
         # Add Instabug-specific options
         instabug_options = [
           FastlaneCore::ConfigItem.new(
@@ -88,9 +112,17 @@ module Fastlane
             optional: false,
             type: String,
             sensitive: true
-          ) 
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :instabug_api_base_url,
+            env_name: "INSTABUG_API_BASE_URL",
+            description: "Instabug API base URL (defaults to https://api.instabug.com)",
+            optional: true,
+            type: String,
+            skip_type_validation: true # Since we don't extract this param
+          )
         ]
-        
+
         # Combine both sets of options
         options + instabug_options
       end
@@ -119,6 +151,24 @@ module Fastlane
       def self.category
         :building
       end
+
+      # This helper method provides a clean and prioritized way to get the Android build output.
+      # It checks for the most common output types in a specific order.
+      # This is used to get the build path for the Android build artifact.
+      def self.fetch_android_build_path(lane_context)
+        build_keys = [
+          SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS,
+          SharedValues::GRADLE_APK_OUTPUT_PATH,
+          SharedValues::GRADLE_ALL_AAB_OUTPUT_PATHS,
+          SharedValues::GRADLE_AAB_OUTPUT_PATH
+        ]
+        build_keys.each do |build_key|
+          build_path = lane_context[build_key]
+          return build_path if build_path && !build_path.empty?
+        end
+
+        nil
+      end
     end
   end
-end 
+end

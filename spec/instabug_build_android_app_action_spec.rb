@@ -23,7 +23,12 @@ describe Fastlane::Actions::InstabugBuildAndroidAppAction do
 
   describe '#run' do
     context 'when build succeeds' do
-      it 'reports inprogress, calls build action, and reports success' do
+      it 'reports inprogress, calls build action, and reports success with timing and path' do
+        # Mock the lane context to return a build path
+        allow(Fastlane::Actions).to receive(:lane_context).and_return({
+          Fastlane::Actions::SharedValues::GRADLE_APK_OUTPUT_PATH => '/path/to/app.apk'
+        })
+
         expect(Fastlane::Actions::GradleAction).to receive(:run)
           .with(hash_including(task: 'assembleRelease', project_dir: 'android/'))
           .and_return('build_result')
@@ -36,28 +41,38 @@ describe Fastlane::Actions::InstabugBuildAndroidAppAction do
             body: {
               branch_name: 'crash-fix/instabug-crash-456',
               status: 'inprogress',
-              step: 'build_app'
+              step: 'build_app',
+              extras: {},
+              error_message: nil
             }.to_json,
             headers: {
               'Content-Type' => 'application/json',
               'Authorization' => 'Bearer test-api-key',
-              'User-Agent' => 'fastlane-plugin-instabug-stores-upload'
+              'User-Agent' => 'fastlane-plugin-instabug_stores_upload'
             }
           ).once
 
         expect(WebMock).to have_requested(:patch, api_endpoint)
-          .with(
-            body: {
-              branch_name: 'crash-fix/instabug-crash-456',
-              status: 'success',
-              step: 'build_app'
-            }.to_json,
-            headers: {
-              'Content-Type' => 'application/json',
-              'Authorization' => 'Bearer test-api-key',
-              'User-Agent' => 'fastlane-plugin-instabug-stores-upload'
-            }
-          ).once
+          .with { |req|
+            body = JSON.parse(req.body)
+            body['status'] == 'success' &&
+              body['branch_name'] == 'crash-fix/instabug-crash-456' &&
+              body['step'] == 'build_app' &&
+              body['extras']['build_path'] == '/path/to/app.apk' &&
+              body['extras']['build_time'].kind_of?(Integer)
+          }.once
+      end
+
+      it 'fails when no build artifact is found' do
+        # Mock empty lane context
+        allow(Fastlane::Actions).to receive(:lane_context).and_return({})
+
+        expect(Fastlane::Actions::GradleAction).to receive(:run)
+          .and_return('build_result')
+
+        expect do
+          described_class.run(valid_params)
+        end.to raise_error(FastlaneCore::Interface::FastlaneError, /Could not find any generated APK or AAB/)
       end
     end
 
@@ -67,16 +82,18 @@ describe Fastlane::Actions::InstabugBuildAndroidAppAction do
         expect(Fastlane::Actions::GradleAction).to receive(:run)
           .and_raise(error)
 
-        expect {
+        expect do
           described_class.run(valid_params)
-        }.to raise_error(StandardError, 'Build failed')
+        end.to raise_error(StandardError, 'Build failed')
 
         expect(WebMock).to have_requested(:patch, api_endpoint)
           .with(
             body: {
               branch_name: 'crash-fix/instabug-crash-456',
               status: 'failure',
-              step: 'build_app'
+              step: 'build_app',
+              extras: {},
+              error_message: 'Build failed'
             }.to_json
           )
       end
@@ -86,9 +103,9 @@ describe Fastlane::Actions::InstabugBuildAndroidAppAction do
       it 'raises user error' do
         params = valid_params.merge(branch_name: nil)
 
-        expect {
+        expect do
           described_class.run(params)
-        }.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
+        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
       end
     end
 
@@ -96,16 +113,21 @@ describe Fastlane::Actions::InstabugBuildAndroidAppAction do
       it 'raises user error' do
         params = valid_params.merge(branch_name: '')
 
-        expect {
+        expect do
           described_class.run(params)
-        }.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
+        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
       end
     end
 
     context 'when branch name does not match instabug pattern' do
       it 'does not make API calls but still runs build' do
         params = valid_params.merge(branch_name: 'feature/new-feature')
-        
+
+        # Mock successful build with a valid build path to avoid validation error
+        allow(Fastlane::Actions).to receive(:lane_context).and_return({
+          Fastlane::Actions::SharedValues::GRADLE_APK_OUTPUT_PATH => '/path/to/app.apk'
+        })
+
         expect(Fastlane::Actions::GradleAction).to receive(:run)
           .and_return('build_result')
 
@@ -113,6 +135,58 @@ describe Fastlane::Actions::InstabugBuildAndroidAppAction do
 
         expect(result).to eq('build_result')
         expect(WebMock).not_to have_requested(:patch, api_endpoint)
+      end
+    end
+  end
+
+  describe '.fetch_android_build_path' do
+    let(:lane_context) { {} }
+
+    context 'when all AAB output paths are available' do
+      it 'returns all AAB paths' do
+        lane_context[Fastlane::Actions::SharedValues::GRADLE_ALL_AAB_OUTPUT_PATHS] = ['/path/to/app1.aab', '/path/to/app2.aab']
+
+        result = described_class.fetch_android_build_path(lane_context)
+
+        expect(result).to eq(['/path/to/app1.aab', '/path/to/app2.aab'])
+      end
+    end
+
+    context 'when single AAB output path is available' do
+      it 'returns single AAB path' do
+        lane_context[Fastlane::Actions::SharedValues::GRADLE_AAB_OUTPUT_PATH] = '/path/to/app.aab'
+
+        result = described_class.fetch_android_build_path(lane_context)
+
+        expect(result).to eq('/path/to/app.aab')
+      end
+    end
+
+    context 'when all APK output paths are available' do
+      it 'returns all APK paths' do
+        lane_context[Fastlane::Actions::SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS] = ['/path/to/app1.apk', '/path/to/app2.apk']
+
+        result = described_class.fetch_android_build_path(lane_context)
+
+        expect(result).to eq(['/path/to/app1.apk', '/path/to/app2.apk'])
+      end
+    end
+
+    context 'when single APK output path is available' do
+      it 'returns single APK path' do
+        lane_context[Fastlane::Actions::SharedValues::GRADLE_APK_OUTPUT_PATH] = '/path/to/app.apk'
+
+        result = described_class.fetch_android_build_path(lane_context)
+
+        expect(result).to eq('/path/to/app.apk')
+      end
+    end
+
+    context 'when no build paths are available' do
+      it 'returns nil' do
+        result = described_class.fetch_android_build_path(lane_context)
+
+        expect(result).to be_nil
       end
     end
   end
@@ -132,4 +206,4 @@ describe Fastlane::Actions::InstabugBuildAndroidAppAction do
       expect(described_class.category).to eq(:building)
     end
   end
-end 
+end

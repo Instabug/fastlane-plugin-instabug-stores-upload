@@ -3,10 +3,10 @@
 # Example lane for building iOS app with Instabug reporting
 lane :build_ios_app do |options|
   branch_name = options[:branch_name]
-  
+
   instabug_build_ios_app(
-    branch_name: branch_name,
-    instabug_api_key: ENV["INSTABUG_API_KEY"],
+    branch_name:,
+    instabug_api_key: ENV.fetch("INSTABUG_API_KEY", nil),
     # All standard build_ios_app parameters are supported
     workspace: "MyApp.xcworkspace",
     scheme: "MyApp",
@@ -18,18 +18,18 @@ end
 # Example lane for building Android app with Instabug reporting
 lane :build_android_app do |options|
   branch_name = options[:branch_name]
-  
+
   instabug_build_android_app(
-    branch_name: branch_name,
-    instabug_api_key: ENV["INSTABUG_API_KEY"],
+    branch_name:,
+    instabug_api_key: ENV.fetch("INSTABUG_API_KEY", nil),
     # All standard gradle parameters are supported
     task: "assembleRelease",
     project_dir: "android/",
     properties: {
       "android.injected.signing.store.file" => "keystore.jks",
-      "android.injected.signing.store.password" => ENV["KEYSTORE_PASSWORD"],
+      "android.injected.signing.store.password" => ENV.fetch("KEYSTORE_PASSWORD", nil),
       "android.injected.signing.key.alias" => "key0",
-      "android.injected.signing.key.password" => ENV["KEY_PASSWORD"]
+      "android.injected.signing.key.password" => ENV.fetch("KEY_PASSWORD", nil)
     }
   )
 end
@@ -37,23 +37,23 @@ end
 # Example lane for uploading to App Store with Instabug reporting
 lane :upload_to_app_store do |options|
   branch_name = options[:branch_name]
-  
+
   instabug_upload_to_app_store(
-    branch_name: branch_name,
-    instabug_api_key: ENV["INSTABUG_API_KEY"],
+    branch_name:,
+    instabug_api_key: ENV.fetch("INSTABUG_API_KEY", nil),
     # All standard upload_to_app_store parameters are supported
     ipa: "path/to/your/app.ipa",
     skip_waiting_for_build_processing: true
   )
 end
 
-# Example lane for uploading to Play Store with Instabug reporting  
+# Example lane for uploading to Play Store with Instabug reporting
 lane :upload_to_play_store do |options|
-  branch_name = options[:branch_name] 
-  
+  branch_name = options[:branch_name]
+
   instabug_upload_to_play_store(
-    branch_name: branch_name,
-    instabug_api_key: ENV["INSTABUG_API_KEY"],
+    branch_name:,
+    instabug_api_key: ENV.fetch("INSTABUG_API_KEY", nil),
     # All standard upload_to_play_store parameters are supported
     aab: "path/to/your/app.aab",
     track: "internal"

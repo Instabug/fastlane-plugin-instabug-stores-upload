@@ -6,48 +6,52 @@ module Fastlane
     class InstabugUploadToPlayStoreAction < Action
       def self.run(params)
         UI.message("Starting Instabug Play Store upload...")
-        
+
         # Extract Instabug-specific parameters
-        branch_name = params.delete(:branch_name)
-        instabug_api_key = params.delete(:instabug_api_key)
+        branch_name = params[:branch_name]
+        instabug_api_key = params[:instabug_api_key]
 
         # Validate required parameters
         if branch_name.nil? || branch_name.empty?
           UI.user_error!("branch_name is required for Instabug reporting")
         end
 
+        # Filter out Instabug-specific parameters before passing to upload_to_play_store
+        filtered_params = Helper::InstabugStoresUploadHelper.filter_instabug_params(params, Actions::UploadToPlayStoreAction)
+
         begin
           # Report upload start to Instabug
           Helper::InstabugStoresUploadHelper.report_status(
-            branch_name: branch_name,
+            branch_name:,
             api_key: instabug_api_key,
             status: "inprogress",
             step: "upload_to_the_store"
           )
 
           # Execute the actual upload to Play Store
-          result = Actions::UploadToPlayStoreAction.run(params)
-          
+          result = Actions::UploadToPlayStoreAction.run(filtered_params)
+
           # Report upload success to Instabug
           Helper::InstabugStoresUploadHelper.report_status(
-            branch_name: branch_name,
+            branch_name:,
             api_key: instabug_api_key,
             status: "success",
             step: "upload_to_the_store"
           )
-          
+
           UI.success("Play Store upload completed successfully!")
           result
-          
-        rescue => e
-          UI.error("Play Store upload failed: #{e.message}")
+        rescue StandardError => e
+          error_message = Helper::InstabugStoresUploadHelper.extract_error_message(e.message)
+          UI.error("Play Store upload failed: #{error_message}")
 
           # Report upload failure to Instabug
           Helper::InstabugStoresUploadHelper.report_status(
-            branch_name: branch_name,
+            branch_name:,
             api_key: instabug_api_key,
             status: "failure",
-            step: "upload_to_the_store"
+            step: "upload_to_the_store",
+            error_message: e.message
           )
           raise e
         end
@@ -72,7 +76,7 @@ module Fastlane
       def self.available_options
         # Start with the original upload_to_play_store options
         options = Actions::UploadToPlayStoreAction.available_options
-        
+
         # Add Instabug-specific options
         instabug_options = [
           FastlaneCore::ConfigItem.new(
@@ -91,7 +95,7 @@ module Fastlane
             sensitive: true
           )
         ]
-        
+
         # Combine both sets of options
         options + instabug_options
       end
@@ -118,4 +122,4 @@ module Fastlane
       end
     end
   end
-end 
+end

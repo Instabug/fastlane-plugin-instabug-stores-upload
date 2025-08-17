@@ -5,7 +5,7 @@ module Fastlane
   module Actions
     class InstabugStoresUploadAction < Action
       def self.run(params)
-        UI.message("The instabug-stores-upload plugin is working!")
+        UI.message("The instabug_stores_upload plugin is working!")
       end
 
       def self.description
