@@ -70,7 +70,7 @@ module Fastlane
             api_key: instabug_api_key,
             status: "failure",
             step: "build_app",
-            error_message: error_message
+            error_message:
           )
           raise e
         end
