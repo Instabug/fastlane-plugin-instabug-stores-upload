@@ -25,18 +25,24 @@ module Fastlane
             branch_name:,
             api_key: instabug_api_key,
             status: "inprogress",
-            step: "upload_to_the_store"
+            step: "upload_to_store"
           )
 
           # Execute the actual upload to Play Store
           result = Actions::UploadToPlayStoreAction.run(filtered_params)
+
+          # Extract version information for Android
+          version_code = detect_version_code(params)
 
           # Report upload success to Instabug
           Helper::InstabugStoresUploadHelper.report_status(
             branch_name:,
             api_key: instabug_api_key,
             status: "success",
-            step: "upload_to_the_store"
+            step: "upload_to_store",
+            extras: {
+              version_code:
+            }.compact
           )
 
           UI.success("Play Store upload completed successfully!")
@@ -50,7 +56,7 @@ module Fastlane
             branch_name:,
             api_key: instabug_api_key,
             status: "failure",
-            step: "upload_to_the_store",
+            step: "upload_to_store",
             error_message: e.message
           )
           raise e
@@ -119,6 +125,47 @@ module Fastlane
 
       def self.category
         :google_play_console
+      end
+
+      def self.detect_version_code(params)
+        return params[:version_code] if params[:version_code]
+
+        UI.message("Fetching latest version code from Google Play Console...")
+
+        begin
+          # Build parameters hash
+          google_play_params = build_google_play_params(params)
+
+          version_codes = Actions::GooglePlayTrackVersionCodesAction.run(google_play_params)
+
+          if version_codes&.any?
+            latest_version = version_codes.first
+            UI.success("Found latest version code: #{latest_version}")
+            latest_version
+          else
+            UI.error("No version codes found on Google Play")
+            nil
+          end
+        rescue StandardError => e
+          UI.error("Failed to fetch from Google Play: #{e.message}")
+          nil
+        end
+      end
+
+      # Build parameters for google_play_track_version_codes action
+      def self.build_google_play_params(params)
+        google_params = {
+          package_name: params[:package_name],
+          track: params[:track] || 'production'
+        }
+
+        # Add authentication parameters
+        auth_keys = %i[key issuer json_key json_key_data root_url timeout]
+        auth_keys.each do |key|
+          google_params[key] = params[key] if params[key].present?
+        end
+
+        google_params.compact
       end
     end
   end
