@@ -7,7 +7,8 @@ describe Fastlane::Actions::InstabugUploadToPlayStoreAction do
       instabug_api_key: 'test-api-key',
       package_name: 'com.example.app',
       aab: 'test.aab',
-      track: 'internal'
+      track: 'internal',
+      json_key: 'path/to/key.json'
     }
   end
 
@@ -16,6 +17,10 @@ describe Fastlane::Actions::InstabugUploadToPlayStoreAction do
   before do
     stub_request(:patch, api_endpoint)
       .to_return(status: 200, body: '{}', headers: {})
+
+    # Mock the GooglePlayTrackVersionCodesAction to avoid actual API calls
+    allow(Fastlane::Actions::GooglePlayTrackVersionCodesAction).to receive(:run)
+      .and_return(['123', '122', '121'])
   end
 
   describe '#run' do
@@ -33,7 +38,7 @@ describe Fastlane::Actions::InstabugUploadToPlayStoreAction do
             body: {
               branch_name: 'crash-fix/instabug-crash-456',
               status: 'inprogress',
-              step: 'upload_to_the_store',
+              step: 'upload_to_store',
               extras: {},
               error_message: nil
             }.to_json,
@@ -49,8 +54,8 @@ describe Fastlane::Actions::InstabugUploadToPlayStoreAction do
             body: {
               branch_name: 'crash-fix/instabug-crash-456',
               status: 'success',
-              step: 'upload_to_the_store',
-              extras: {},
+              step: 'upload_to_store',
+              extras: { version_code: '123' },
               error_message: nil
             }.to_json,
             headers: {
@@ -58,6 +63,61 @@ describe Fastlane::Actions::InstabugUploadToPlayStoreAction do
               'Authorization' => 'Bearer test-api-key',
               'User-Agent' => 'fastlane-plugin-instabug_stores_upload'
             }
+          ).once
+      end
+
+      it 'uses version_code from parameters when provided' do
+        params_with_version = valid_params.merge(version_code: '456')
+
+        expect(Fastlane::Actions::UploadToPlayStoreAction).to receive(:run)
+          .and_return('upload_result')
+
+        result = described_class.run(params_with_version)
+
+        expect(result).to eq('upload_result')
+        expect(WebMock).to have_requested(:patch, api_endpoint)
+          .with(
+            body: hash_including(
+              extras: { version_code: '456' }
+            )
+          ).once
+      end
+
+      it 'handles Google Play API failure gracefully' do
+        allow(Fastlane::Actions::GooglePlayTrackVersionCodesAction).to receive(:run)
+          .and_raise(StandardError.new('API Error'))
+
+        expect(Fastlane::Actions::UploadToPlayStoreAction).to receive(:run)
+          .and_return('upload_result')
+
+        result = described_class.run(valid_params)
+
+        expect(result).to eq('upload_result')
+        expect(WebMock).to have_requested(:patch, api_endpoint)
+          .with(
+            body: hash_including(
+              status: 'success',
+              extras: {}
+            )
+          ).once
+      end
+
+      it 'handles empty version codes from Google Play' do
+        allow(Fastlane::Actions::GooglePlayTrackVersionCodesAction).to receive(:run)
+          .and_return([])
+
+        expect(Fastlane::Actions::UploadToPlayStoreAction).to receive(:run)
+          .and_return('upload_result')
+
+        result = described_class.run(valid_params)
+
+        expect(result).to eq('upload_result')
+        expect(WebMock).to have_requested(:patch, api_endpoint)
+          .with(
+            body: hash_including(
+              status: 'success',
+              extras: {}
+            )
           ).once
       end
     end
@@ -77,9 +137,9 @@ describe Fastlane::Actions::InstabugUploadToPlayStoreAction do
             body: {
               branch_name: 'crash-fix/instabug-crash-456',
               status: 'failure',
-              step: 'upload_to_the_store',
+              step: 'upload_to_store',
               extras: {},
-              error_message: 'Upload failed'
+              error_message: 'Something went wrong while uploading your build. Check your Fastlane run for more details.'
             }.to_json
           )
       end
@@ -112,10 +172,65 @@ describe Fastlane::Actions::InstabugUploadToPlayStoreAction do
         expect(Fastlane::Actions::UploadToPlayStoreAction).to receive(:run)
           .and_return('upload_result')
 
+        # Should still try to detect version code even for non-matching branches
+        expect(Fastlane::Actions::GooglePlayTrackVersionCodesAction).to receive(:run)
+          .and_return(['123'])
+
         result = described_class.run(params)
 
         expect(result).to eq('upload_result')
         expect(WebMock).not_to have_requested(:patch, api_endpoint)
+      end
+    end
+  end
+
+  describe '.detect_version_code' do
+    let(:params) do
+      {
+        package_name: 'com.example.app',
+        track: 'production',
+        json_key: 'path/to/key.json'
+      }
+    end
+
+    context 'when version_code is provided in parameters' do
+      it 'returns the parameter value' do
+        params_with_version = params.merge(version_code: '789')
+
+        result = described_class.detect_version_code(params_with_version)
+
+        expect(result).to eq('789')
+        expect(Fastlane::Actions::GooglePlayTrackVersionCodesAction).not_to have_received(:run)
+      end
+    end
+
+    context 'when version_code is not in parameters' do
+      it 'fetches from Google Play Console' do
+        allow(Fastlane::Actions::GooglePlayTrackVersionCodesAction).to receive(:run)
+          .with(hash_including(package_name: 'com.example.app', track: 'production'))
+          .and_return(['456', '455', '454'])
+
+        result = described_class.detect_version_code(params)
+
+        expect(result).to eq('456')
+      end
+
+      it 'returns nil when Google Play returns empty array' do
+        allow(Fastlane::Actions::GooglePlayTrackVersionCodesAction).to receive(:run)
+          .and_return([])
+
+        result = described_class.detect_version_code(params)
+
+        expect(result).to be_nil
+      end
+
+      it 'returns nil when Google Play API fails' do
+        allow(Fastlane::Actions::GooglePlayTrackVersionCodesAction).to receive(:run)
+          .and_raise(StandardError.new('API Error'))
+
+        result = described_class.detect_version_code(params)
+
+        expect(result).to be_nil
       end
     end
   end

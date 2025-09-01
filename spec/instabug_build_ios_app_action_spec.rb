@@ -55,7 +55,7 @@ describe Fastlane::Actions::InstabugBuildIosAppAction do
             body['status'] == 'success' &&
               body['branch_name'] == 'crash-fix/instabug-crash-123' &&
               body['step'] == 'build_app' &&
-              body['extras']['build_path'] == '/path/to/app.ipa' &&
+              body['extras']['build_path'] == ['/path/to/app.ipa'] &&
               body['extras']['build_time'].kind_of?(Integer)
           }.once
       end
@@ -76,7 +76,7 @@ describe Fastlane::Actions::InstabugBuildIosAppAction do
             body['status'] == 'success' &&
               body['branch_name'] == 'crash-fix/instabug-crash-123' &&
               body['step'] == 'build_app' &&
-              body['extras']['build_path'].nil? &&
+              body['extras']['build_path'] == [] &&
               body['extras']['build_time'].kind_of?(Integer)
           }.once
       end
@@ -99,7 +99,7 @@ describe Fastlane::Actions::InstabugBuildIosAppAction do
               status: 'failure',
               step: 'build_app',
               extras: {},
-              error_message: 'Build failed'
+              error_message: 'Your build was triggered but failed during execution. This could be due to missing environment variables or incorrect build credentials. Check CI logs for full details.'
             }.to_json
           )
       end

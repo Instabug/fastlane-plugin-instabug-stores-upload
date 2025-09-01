@@ -17,7 +17,7 @@ require 'webmock/rspec'
 class Fastlane::Helper::InstabugStoresUploadHelper
   def self.filter_instabug_params(params, target_action_class)
     # In test environment, params are plain hashes - just filter them
-    return params.reject { |key, _value| INSTABUG_KEYS.include?(key) }
+    return params.except(*INSTABUG_KEYS)
   end
 end
 

@@ -11,24 +11,26 @@ module Fastlane
       # Default Base URL for Instabug API
       DEFAULT_INSTABUG_API_BASE_URL = "https://api.instabug.com".freeze
       INSTABUG_KEYS = %i[branch_name instabug_api_key instabug_api_base_url].freeze
+      FASTLANE_ERROR_MESSAGE = {
+        build_app: "Your build was triggered but failed during execution. This could be due to missing environment variables or incorrect build credentials. Check CI logs for full details.",
+        upload_to_store: "Something went wrong while uploading your build. Check your Fastlane run for more details."
+      }
 
       # Extract the important part of an error message
-      def self.extract_error_message(error_message)
-        return error_message unless error_message.is_a?(String)
-      
+      def self.extract_error_message(error_message, step)
+        return error_message unless error_message.kind_of?(String)
+
         lines = error_message.split("\n")
         start_index = lines.find_index { |line| line.strip.start_with?("* What went wrong:") }
         end_index   = lines.find_index { |line| line.strip.start_with?("* Try:") }
-      
+
         if start_index && end_index && end_index > start_index
           extracted_lines = lines[(start_index + 1)...end_index].map(&:strip).reject(&:empty?)
           return extracted_lines.join(" ")[0, 250] unless extracted_lines.empty?
         end
-      
+
         # Fallback message
-        "Your build was triggered but failed during execution. " \
-        "This could be due to missing environment variables or incorrect build credentials. " \
-        "Check CI logs for full details."
+        FASTLANE_ERROR_MESSAGE[step]
       end
 
       def self.show_message
