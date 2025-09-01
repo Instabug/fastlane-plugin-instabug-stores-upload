@@ -137,7 +137,7 @@ describe Fastlane::Actions::InstabugUploadToAppStoreAction do
               status: 'failure',
               step: 'upload_to_store',
               extras: {},
-              error_message: 'Upload failed'
+              error_message: 'Something went wrong while uploading your build. Check your Fastlane run for more details.'
             }.to_json
           )
       end

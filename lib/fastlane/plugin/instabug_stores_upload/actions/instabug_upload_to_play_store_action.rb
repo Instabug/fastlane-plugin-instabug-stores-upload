@@ -48,7 +48,7 @@ module Fastlane
           UI.success("Play Store upload completed successfully!")
           result
         rescue StandardError => e
-          error_message = Helper::InstabugStoresUploadHelper.extract_error_message(e.message)
+          error_message = Helper::InstabugStoresUploadHelper.extract_error_message(e.message, :upload_to_store)
           UI.error("Play Store upload failed: #{error_message}")
 
           # Report upload failure to Instabug
@@ -57,7 +57,7 @@ module Fastlane
             api_key: instabug_api_key,
             status: "failure",
             step: "upload_to_store",
-            error_message: e.message
+            error_message:
           )
           raise e
         end

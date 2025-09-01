@@ -49,7 +49,7 @@ module Fastlane
           UI.success("App Store upload completed successfully!")
           result
         rescue StandardError => e
-          error_message = Helper::InstabugStoresUploadHelper.extract_error_message(e.message)
+          error_message = Helper::InstabugStoresUploadHelper.extract_error_message(e.message, :upload_to_store)
 
           UI.error("App Store upload failed: #{error_message}")
 
@@ -59,7 +59,7 @@ module Fastlane
             api_key: instabug_api_key,
             status: "failure",
             step: "upload_to_store",
-            error_message: e.message
+            error_message:
           )
           raise e
         end
