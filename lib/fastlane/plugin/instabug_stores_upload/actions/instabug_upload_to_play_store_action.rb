@@ -162,7 +162,7 @@ module Fastlane
         # Add authentication parameters
         auth_keys = %i[key issuer json_key json_key_data root_url timeout]
         auth_keys.each do |key|
-          google_params[key] = params[key] if params[key].present?
+          google_params[key] = params[key]
         end
 
         google_params.compact

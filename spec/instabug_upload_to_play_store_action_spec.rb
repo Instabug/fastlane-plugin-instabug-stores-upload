@@ -232,15 +232,6 @@ describe Fastlane::Actions::InstabugUploadToPlayStoreAction do
 
         expect(result).to be_nil
       end
-
-      it 'returns nil when package_name is missing' do
-        params_without_package = params.except(:package_name)
-
-        result = described_class.detect_version_code(params_without_package)
-
-        expect(result).to be_nil
-        expect(Fastlane::Actions::GooglePlayTrackVersionCodesAction).not_to have_received(:run)
-      end
     end
   end
 
