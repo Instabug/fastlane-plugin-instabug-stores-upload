@@ -1,16 +1,16 @@
-# instabug-stores-upload plugin
+# instabug_stores_upload plugin
 
-[![fastlane Plugin Badge](https://rawcdn.githack.com/fastlane/fastlane/master/fastlane/assets/plugin-badge.svg)](https://rubygems.org/gems/fastlane-plugin-instabug-stores-upload)
+[![fastlane Plugin Badge](https://rawcdn.githack.com/fastlane/fastlane/master/fastlane/assets/plugin-badge.svg)](https://rubygems.org/gems/fastlane-plugin-instabug_stores_upload)
 
 ## Getting Started
 
-This project is a [_fastlane_](https://github.com/fastlane/fastlane) plugin. To get started with `fastlane-plugin-instabug-stores-upload`, add it to your project by running:
+This project is a [_fastlane_](https://github.com/fastlane/fastlane) plugin. To get started with `fastlane-plugin-instabug_stores_upload`, add it to your project by running:
 
 ```bash
-fastlane add_plugin instabug-stores-upload
+fastlane add_plugin instabug_stores_upload
 ```
 
-## About instabug-stores-upload
+## About instabug_stores_upload
 
 Wrapper plugin for uploading builds to App Store and Play Store with Instabug-specific metadata reporting. This plugin provides custom actions that wrap the standard Fastlane actions and automatically report build and upload events to Instabug systems for better observability and integration into internal pipelines.
 
