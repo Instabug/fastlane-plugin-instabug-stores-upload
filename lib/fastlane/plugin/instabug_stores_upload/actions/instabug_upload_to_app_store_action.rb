@@ -132,7 +132,7 @@ module Fastlane
       def self.detect_app_version(params)
         return params[:app_version] if params[:app_version]
 
-        ipa = params[:ipa]
+        ipa = params[:ipa] || Actions.lane_context[SharedValues::IPA_OUTPUT_PATH]
         return nil unless ipa && File.exist?(ipa)
 
         begin
