@@ -39,10 +39,7 @@ module Fastlane
             branch_name:,
             api_key: instabug_api_key,
             status: "success",
-            step: "upload_to_store",
-            extras: {
-              version_code:
-            }.compact
+            step: "upload_to_store"
           )
 
           UI.success("Play Store upload completed successfully!")
