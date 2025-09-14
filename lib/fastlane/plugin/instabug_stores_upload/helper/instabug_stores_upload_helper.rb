@@ -79,6 +79,8 @@ module Fastlane
           error_message:
         }
 
+        UI.message("Payload: #{payload.to_json}")
+
         begin
           http = Net::HTTP.new(uri.host, uri.port)
           http.use_ssl = true
