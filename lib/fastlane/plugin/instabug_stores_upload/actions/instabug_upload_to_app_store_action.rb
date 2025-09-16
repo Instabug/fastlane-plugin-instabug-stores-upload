@@ -1,4 +1,5 @@
 require 'fastlane/action'
+require 'fastlane_core/ipa_file_analyser'
 require_relative '../helper/instabug_stores_upload_helper'
 
 module Fastlane
@@ -25,24 +26,30 @@ module Fastlane
             branch_name:,
             api_key: instabug_api_key,
             status: "inprogress",
-            step: "upload_to_the_store"
+            step: "upload_to_store"
           )
 
           # Execute the actual upload to App Store
           result = Actions::UploadToAppStoreAction.run(filtered_params)
+
+          # Extract version information for iOS
+          version_string = detect_app_version(params)
 
           # Report upload success to Instabug
           Helper::InstabugStoresUploadHelper.report_status(
             branch_name:,
             api_key: instabug_api_key,
             status: "success",
-            step: "upload_to_the_store"
+            step: "upload_to_store",
+            extras: {
+              version_string:
+            }.compact
           )
 
           UI.success("App Store upload completed successfully!")
           result
         rescue StandardError => e
-          error_message = Helper::InstabugStoresUploadHelper.extract_error_message(e.message)
+          error_message = Helper::InstabugStoresUploadHelper.extract_error_message(e.message, :upload_to_store)
 
           UI.error("App Store upload failed: #{error_message}")
 
@@ -51,8 +58,8 @@ module Fastlane
             branch_name:,
             api_key: instabug_api_key,
             status: "failure",
-            step: "upload_to_the_store",
-            error_message: e.message
+            step: "upload_to_store",
+            error_message:
           )
           raise e
         end
@@ -119,6 +126,29 @@ module Fastlane
 
       def self.category
         :app_store_connect
+      end
+
+      # Detect app version
+      def self.detect_app_version(params)
+        return params[:app_version] if params[:app_version]
+
+        ipa = params[:ipa] || Actions.lane_context[SharedValues::IPA_OUTPUT_PATH]
+        return nil unless ipa && File.exist?(ipa)
+
+        begin
+          version = FastlaneCore::IpaFileAnalyser.fetch_app_version(ipa)
+
+          if version.to_s.strip.empty?
+            UI.error("Could not extract version from IPA")
+            return nil
+          end
+
+          UI.success("Found app version: #{version}")
+          version
+        rescue StandardError => e
+          UI.verbose("Could not extract version from IPA: #{e.message}")
+          nil
+        end
       end
     end
   end
