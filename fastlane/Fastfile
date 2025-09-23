@@ -1,12 +1,12 @@
-# Fastfile for Instabug Stores Upload Plugin
+# Fastfile for Luciq Agent Release Tracking Plugin
 
-# Example lane for building iOS app with Instabug reporting
+# Example lane for building iOS app with Luciq reporting
 lane :build_ios_app do |options|
   branch_name = options[:branch_name]
 
-  instabug_build_ios_app(
+  luciq_build_ios_app(
     branch_name:,
-    instabug_api_key: ENV.fetch("INSTABUG_API_KEY", nil),
+    luciq_api_key: ENV.fetch("LUCIQ_API_KEY", nil),
     # All standard build_ios_app parameters are supported
     workspace: "MyApp.xcworkspace",
     scheme: "MyApp",
@@ -15,13 +15,13 @@ lane :build_ios_app do |options|
   )
 end
 
-# Example lane for building Android app with Instabug reporting
+# Example lane for building Android app with Luciq reporting
 lane :build_android_app do |options|
   branch_name = options[:branch_name]
 
-  instabug_build_android_app(
+  luciq_build_android_app(
     branch_name:,
-    instabug_api_key: ENV.fetch("INSTABUG_API_KEY", nil),
+    luciq_api_key: ENV.fetch("LUCIQ_API_KEY", nil),
     # All standard gradle parameters are supported
     task: "assembleRelease",
     project_dir: "android/",
@@ -34,26 +34,26 @@ lane :build_android_app do |options|
   )
 end
 
-# Example lane for uploading to App Store with Instabug reporting
+# Example lane for uploading to App Store with Luciq reporting
 lane :upload_to_app_store do |options|
   branch_name = options[:branch_name]
 
-  instabug_upload_to_app_store(
+  luciq_upload_to_app_store(
     branch_name:,
-    instabug_api_key: ENV.fetch("INSTABUG_API_KEY", nil),
+    luciq_api_key: ENV.fetch("LUCIQ_API_KEY", nil),
     # All standard upload_to_app_store parameters are supported
     ipa: "path/to/your/app.ipa",
     skip_waiting_for_build_processing: true
   )
 end
 
-# Example lane for uploading to Play Store with Instabug reporting
+# Example lane for uploading to Play Store with Luciq reporting
 lane :upload_to_play_store do |options|
   branch_name = options[:branch_name]
 
-  instabug_upload_to_play_store(
+  luciq_upload_to_play_store(
     branch_name:,
-    instabug_api_key: ENV.fetch("INSTABUG_API_KEY", nil),
+    luciq_api_key: ENV.fetch("LUCIQ_API_KEY", nil),
     # All standard upload_to_play_store parameters are supported
     aab: "path/to/your/app.aab",
     track: "internal"

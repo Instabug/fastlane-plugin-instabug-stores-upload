@@ -1,30 +1,30 @@
 require 'fastlane/action'
 require 'fastlane_core/ipa_file_analyser'
-require_relative '../helper/instabug_stores_upload_helper'
+require_relative '../helper/luciq_agent_release_tracking_helper'
 
 module Fastlane
   module Actions
-    class InstabugUploadToAppStoreAction < Action
+    class LuciqUploadToAppStoreAction < Action
       def self.run(params)
-        UI.message("Starting Instabug App Store upload...")
+        UI.message("Starting Luciq App Store upload...")
 
-        # Extract Instabug-specific parameters
+        # Extract Luciq-specific parameters
         branch_name = params[:branch_name]
-        instabug_api_key = params[:instabug_api_key]
+        luciq_api_key = params[:luciq_api_key]
 
         # Validate required parameters
         if branch_name.nil? || branch_name.empty?
-          UI.user_error!("branch_name is required for Instabug reporting")
+          UI.user_error!("branch_name is required for Luciq reporting")
         end
 
-        # Filter out Instabug-specific parameters before passing to upload_to_app_store
-        filtered_params = Helper::InstabugStoresUploadHelper.filter_instabug_params(params, Actions::UploadToAppStoreAction)
+        # Filter out Luciq-specific parameters before passing to upload_to_app_store
+        filtered_params = Helper::LuciqAgentReleaseTrackingHelper.filter_luciq_params(params, Actions::UploadToAppStoreAction)
 
         begin
-          # Report upload start to Instabug
-          Helper::InstabugStoresUploadHelper.report_status(
+          # Report upload start to Luciq
+          Helper::LuciqAgentReleaseTrackingHelper.report_status(
             branch_name:,
-            api_key: instabug_api_key,
+            api_key: luciq_api_key,
             status: "inprogress",
             step: "upload_to_store"
           )
@@ -35,10 +35,10 @@ module Fastlane
           # Extract version information for iOS
           version_string = detect_app_version(params)
 
-          # Report upload success to Instabug
-          Helper::InstabugStoresUploadHelper.report_status(
+          # Report upload success to Luciq
+          Helper::LuciqAgentReleaseTrackingHelper.report_status(
             branch_name:,
-            api_key: instabug_api_key,
+            api_key: luciq_api_key,
             status: "success",
             step: "upload_to_store",
             extras: {
@@ -49,14 +49,14 @@ module Fastlane
           UI.success("App Store upload completed successfully!")
           result
         rescue StandardError => e
-          error_message = Helper::InstabugStoresUploadHelper.extract_error_message(e.message, :upload_to_store)
+          error_message = Helper::LuciqAgentReleaseTrackingHelper.extract_error_message(e.message, :upload_to_store)
 
           UI.error("App Store upload failed: #{error_message}")
 
-          # Report upload failure to Instabug
-          Helper::InstabugStoresUploadHelper.report_status(
+          # Report upload failure to Luciq
+          Helper::LuciqAgentReleaseTrackingHelper.report_status(
             branch_name:,
-            api_key: instabug_api_key,
+            api_key: luciq_api_key,
             status: "failure",
             step: "upload_to_store",
             error_message:
@@ -66,11 +66,11 @@ module Fastlane
       end
 
       def self.description
-        "Upload to App Store with Instabug metadata reporting"
+        "Upload to App Store with Luciq agent metadata reporting"
       end
 
       def self.authors
-        ["Instabug Company"]
+        ["Luciq Company"]
       end
 
       def self.return_value
@@ -78,26 +78,26 @@ module Fastlane
       end
 
       def self.details
-        "This action wraps the standard upload_to_app_store action and adds Instabug-specific metadata reporting. It tracks upload events per branch and provides better observability for engineering teams."
+        "This action wraps the standard upload_to_app_store action and adds Luciq agent metadata reporting. It tracks upload events per branch and provides better observability for engineering teams."
       end
 
       def self.available_options
         # Start with the original upload_to_app_store options
         options = Actions::UploadToAppStoreAction.available_options
 
-        # Add Instabug-specific options
-        instabug_options = [
+        # Add Luciq-specific options
+        luciq_options = [
           FastlaneCore::ConfigItem.new(
             key: :branch_name,
-            env_name: "INSTABUG_BRANCH_NAME",
+            env_name: "LUCIQ_BRANCH_NAME",
             description: "The branch name for tracking uploads",
             optional: false,
             type: String
           ),
           FastlaneCore::ConfigItem.new(
-            key: :instabug_api_key,
-            env_name: "INSTABUG_API_KEY",
-            description: "Instabug API key for reporting upload events",
+            key: :luciq_api_key,
+            env_name: "LUCIQ_API_KEY",
+            description: "Luciq API key for reporting upload events",
             optional: false,
             type: String,
             sensitive: true
@@ -105,7 +105,7 @@ module Fastlane
         ]
 
         # Combine both sets of options
-        options + instabug_options
+        options + luciq_options
       end
 
       def self.is_supported?(platform)
@@ -114,9 +114,9 @@ module Fastlane
 
       def self.example_code
         [
-          'instabug_upload_to_app_store(
+          'luciq_upload_to_app_store(
             branch_name: "main",
-            instabug_api_key: "your-api-key",
+            luciq_api_key: "your-api-key",
             ipa: "path/to/your.ipa",
             skip_screenshots: true,
             skip_metadata: true

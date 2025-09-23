@@ -1,5 +1,5 @@
 module Fastlane
-  module InstabugStoresUpload
+  module LuciqAgentReleaseTracking
     VERSION = "0.1.0"
   end
 end

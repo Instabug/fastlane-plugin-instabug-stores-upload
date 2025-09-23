@@ -1,19 +1,19 @@
 require 'fastlane/action'
-require_relative '../helper/instabug_stores_upload_helper'
+require_relative '../helper/luciq_agent_release_tracking_helper'
 
 module Fastlane
   module Actions
-    class InstabugStoresUploadAction < Action
+    class LuciqAgentReleaseTrackingAction < Action
       def self.run(params)
-        UI.message("The instabug_stores_upload plugin is working!")
+        UI.message("The luciq_agent_release_tracking plugin is working!")
       end
 
       def self.description
-        "Wrapper plugin for uploading builds to App Store and Play Store with Instabug-specific metadata reporting."
+        "Luciq agent for tracking release builds and uploads to App Store and Play Store with comprehensive metadata reporting."
       end
 
       def self.authors
-        ["Instabug Company"]
+        ["Luciq Company"]
       end
 
       def self.return_value
@@ -22,7 +22,7 @@ module Fastlane
 
       def self.details
         # Optional:
-        "This Fastlane plugin provides wrapper actions around the standard `upload_to_app_store` and `upload_to_play_store` actions. it automatically reports these to the Instabug systems via a secure HTTP request. This allows engineering teams to track build upload steps per branch and platform with better observability and integration into internal pipelines."
+        "This Fastlane plugin provides wrapper actions around the standard build and upload actions. It automatically reports build and upload events to the Luciq systems via secure HTTP requests. This allows engineering teams to track release pipeline steps per branch and platform with comprehensive observability and integration into internal systems."
       end
 
       def self.available_options

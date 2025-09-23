@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe Fastlane::Actions::InstabugBuildAndroidAppAction do
+describe Fastlane::Actions::LuciqBuildAndroidAppAction do
   let(:valid_params) do
     {
       branch_name: 'crash-fix/instabug-crash-456',
-      instabug_api_key: 'test-api-key',
+      luciq_api_key: 'test-api-key',
       task: 'assembleRelease',
       project_dir: 'android/',
       properties: {
@@ -48,7 +48,7 @@ describe Fastlane::Actions::InstabugBuildAndroidAppAction do
             headers: {
               'Content-Type' => 'application/json',
               'Authorization' => 'Bearer test-api-key',
-              'User-Agent' => 'fastlane-plugin-instabug_stores_upload'
+              'User-Agent' => 'fastlane-plugin-luciq_agent_release_tracking'
             }
           ).once
 
@@ -105,7 +105,7 @@ describe Fastlane::Actions::InstabugBuildAndroidAppAction do
 
         expect do
           described_class.run(params)
-        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
+        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Luciq reporting')
       end
     end
 
@@ -115,7 +115,7 @@ describe Fastlane::Actions::InstabugBuildAndroidAppAction do
 
         expect do
           described_class.run(params)
-        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
+        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Luciq reporting')
       end
     end
 
@@ -193,7 +193,7 @@ describe Fastlane::Actions::InstabugBuildAndroidAppAction do
 
   describe 'metadata' do
     it 'has correct description' do
-      expect(described_class.description).to eq('Build Android app with Instabug metadata reporting')
+      expect(described_class.description).to eq('Build Android app with Luciq agent metadata reporting')
     end
 
     it 'supports Android platform only' do
