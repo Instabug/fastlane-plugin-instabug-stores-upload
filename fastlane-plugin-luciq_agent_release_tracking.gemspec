@@ -1,14 +1,14 @@
 lib = File.expand_path("lib", __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'fastlane/plugin/instabug_stores_upload/version'
+require 'fastlane/plugin/luciq_agent_release_tracking/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'fastlane-plugin-instabug_stores_upload'
-  spec.version       = Fastlane::InstabugStoresUpload::VERSION
-  spec.author        = 'Instabug'
-  spec.email         = 'backend-team@instabug.com'
+  spec.name          = 'fastlane-plugin-luciq_agent_release_tracking'
+  spec.version       = Fastlane::LuciqAgentReleaseTracking::VERSION
+  spec.author        = 'Luciq'
+  spec.email         = 'support@luciq.ai'
 
-  spec.summary       = 'Wrapper plugin for uploading builds to App Store and Play Store with Instabug-specific metadata reporting.'
+  spec.summary       = 'Luciq agent for tracking release builds and uploads to App Store and Play Store with comprehensive metadata reporting.'
   spec.homepage      = "https://github.com/Instabug/fastlane-plugin-instabug-stores-upload"
   spec.license       = "MIT"
 
