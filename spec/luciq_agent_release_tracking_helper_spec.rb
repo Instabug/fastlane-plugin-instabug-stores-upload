@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'webmock/rspec'
 
-describe Fastlane::Helper::InstabugStoresUploadHelper do
+describe Fastlane::Helper::LuciqAgentReleaseTrackingHelper do
   describe '.report_status' do
     let(:api_endpoint) { 'https://api.instabug.com/api/web/public/agent_fastlane/status' }
 
@@ -31,7 +31,7 @@ describe Fastlane::Helper::InstabugStoresUploadHelper do
             headers: {
               'Content-Type' => 'application/json',
               'Authorization' => 'Bearer test-key',
-              'User-Agent' => 'fastlane-plugin-instabug_stores_upload'
+              'User-Agent' => 'fastlane-plugin-luciq_agent_release_tracking'
             }
           ).once
       end

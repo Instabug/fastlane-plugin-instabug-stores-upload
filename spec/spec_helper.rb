@@ -10,14 +10,14 @@ module SpecHelper
 end
 
 require 'fastlane' # to import the Action super class
-require 'fastlane/plugin/instabug_stores_upload' # import the actual plugin
+require 'fastlane/plugin/luciq_agent_release_tracking' # import the actual plugin
 require 'webmock/rspec'
 
 # Override the helper method for tests to handle plain hashes
-class Fastlane::Helper::InstabugStoresUploadHelper
-  def self.filter_instabug_params(params, target_action_class)
+class Fastlane::Helper::LuciqAgentReleaseTrackingHelper
+  def self.filter_luciq_params(params, target_action_class)
     # In test environment, params are plain hashes - just filter them
-    return params.except(*INSTABUG_KEYS)
+    return params.except(*LUCIQ_KEYS)
   end
 end
 

@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe Fastlane::Actions::InstabugBuildIosAppAction do
+describe Fastlane::Actions::LuciqBuildIosAppAction do
   let(:valid_params) do
     {
       branch_name: 'crash-fix/instabug-crash-123',
-      instabug_api_key: 'test-api-key',
+      luciq_api_key: 'test-api-key',
       workspace: 'Test.xcworkspace',
       scheme: 'Test',
       export_method: 'app-store'
@@ -45,7 +45,7 @@ describe Fastlane::Actions::InstabugBuildIosAppAction do
             headers: {
               'Content-Type' => 'application/json',
               'Authorization' => 'Bearer test-api-key',
-              'User-Agent' => 'fastlane-plugin-instabug_stores_upload'
+              'User-Agent' => 'fastlane-plugin-luciq_agent_release_tracking'
             }
           ).once
 
@@ -111,7 +111,7 @@ describe Fastlane::Actions::InstabugBuildIosAppAction do
 
         expect do
           described_class.run(params)
-        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
+        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Luciq reporting')
       end
     end
 
@@ -121,7 +121,7 @@ describe Fastlane::Actions::InstabugBuildIosAppAction do
 
         expect do
           described_class.run(params)
-        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
+        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Luciq reporting')
       end
     end
 
@@ -142,7 +142,7 @@ describe Fastlane::Actions::InstabugBuildIosAppAction do
 
   describe 'metadata' do
     it 'has correct description' do
-      expect(described_class.description).to eq('Build iOS app with Instabug metadata reporting')
+      expect(described_class.description).to eq('Build iOS app with Luciq agent metadata reporting')
     end
 
     it 'supports iOS and Mac platforms' do

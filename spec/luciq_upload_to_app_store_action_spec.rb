@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe Fastlane::Actions::InstabugUploadToAppStoreAction do
+describe Fastlane::Actions::LuciqUploadToAppStoreAction do
   let(:valid_params) do
     {
       branch_name: 'crash-fix/instabug-crash-123',
-      instabug_api_key: 'test-api-key',
+      luciq_api_key: 'test-api-key',
       ipa: 'test.ipa',
       skip_screenshots: true
     }
@@ -43,7 +43,7 @@ describe Fastlane::Actions::InstabugUploadToAppStoreAction do
             headers: {
               'Content-Type' => 'application/json',
               'Authorization' => 'Bearer test-api-key',
-              'User-Agent' => 'fastlane-plugin-instabug_stores_upload'
+              'User-Agent' => 'fastlane-plugin-luciq_agent_release_tracking'
             }
           ).once
 
@@ -61,7 +61,7 @@ describe Fastlane::Actions::InstabugUploadToAppStoreAction do
             headers: {
               'Content-Type' => 'application/json',
               'Authorization' => 'Bearer test-api-key',
-              'User-Agent' => 'fastlane-plugin-instabug_stores_upload'
+              'User-Agent' => 'fastlane-plugin-luciq_agent_release_tracking'
             }
           ).once
       end
@@ -149,7 +149,7 @@ describe Fastlane::Actions::InstabugUploadToAppStoreAction do
 
         expect do
           described_class.run(params)
-        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
+        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Luciq reporting')
       end
     end
 
@@ -159,7 +159,7 @@ describe Fastlane::Actions::InstabugUploadToAppStoreAction do
 
         expect do
           described_class.run(params)
-        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Instabug reporting')
+        end.to raise_error(FastlaneCore::Interface::FastlaneError, 'branch_name is required for Luciq reporting')
       end
     end
 
@@ -239,7 +239,7 @@ describe Fastlane::Actions::InstabugUploadToAppStoreAction do
 
   describe 'metadata' do
     it 'has correct description' do
-      expect(described_class.description).to eq('Upload to App Store with Instabug metadata reporting')
+      expect(described_class.description).to eq('Upload to App Store with Luciq agent metadata reporting')
     end
 
     it 'supports iOS and Mac platforms' do

@@ -1,33 +1,33 @@
-# instabug_stores_upload plugin
+# luciq_agent_release_tracking plugin
 
-[![fastlane Plugin Badge](https://rawcdn.githack.com/fastlane/fastlane/master/fastlane/assets/plugin-badge.svg)](https://rubygems.org/gems/fastlane-plugin-instabug_stores_upload)
+[![fastlane Plugin Badge](https://rawcdn.githack.com/fastlane/fastlane/master/fastlane/assets/plugin-badge.svg)](https://rubygems.org/gems/fastlane-plugin-luciq_agent_release_tracking)
 
 ## Getting Started
 
-This project is a [_fastlane_](https://github.com/fastlane/fastlane) plugin. To get started with `fastlane-plugin-instabug_stores_upload`, add it to your project by running:
+This project is a [_fastlane_](https://github.com/fastlane/fastlane) plugin. To get started with `fastlane-plugin-luciq_agent_release_tracking`, add it to your project by running:
 
 ```bash
-fastlane add_plugin instabug_stores_upload
+fastlane add_plugin luciq_agent_release_tracking
 ```
 
-## About instabug_stores_upload
+## About luciq_agent_release_tracking
 
-Wrapper plugin for uploading builds to App Store and Play Store with Instabug-specific metadata reporting. This plugin provides custom actions that wrap the standard Fastlane actions and automatically report build and upload events to Instabug systems for better observability and integration into internal pipelines.
+Luciq agent for tracking release builds and uploads to App Store and Play Store with comprehensive metadata reporting. This plugin provides custom actions that wrap the standard Fastlane actions and automatically report build and upload events to Luciq systems for better observability and integration into internal pipelines.
 
 ### Available Actions
 
-- `instabug_build_ios_app` - Build iOS apps with Instabug reporting
-- `instabug_build_android_app` - Build Android apps with Instabug reporting
-- `instabug_upload_to_app_store` - Upload iOS builds to App Store with Instabug reporting
-- `instabug_upload_to_play_store` - Upload Android builds to Play Store with Instabug reporting
+- `luciq_build_ios_app` - Build iOS apps with Luciq agent reporting
+- `luciq_build_android_app` - Build Android apps with Luciq agent reporting
+- `luciq_upload_to_app_store` - Upload iOS builds to App Store with Luciq agent reporting
+- `luciq_upload_to_play_store` - Upload Android builds to Play Store with Luciq agent reporting
 
 ### Features
 
-- Automatic reporting of build and upload events to Instabug
-- Branch-based tracking for Instabug Agents observability
+- Automatic reporting of build and upload events to Luciq
+- Branch-based tracking for comprehensive release observability
 - Integration with existing Fastlane workflows
 - Support for both iOS and Android platforms
-- Secure API communication with Instabug services
+- Secure API communication with Luciq services
 
 ## Example
 
@@ -38,9 +38,9 @@ Check out the [example `Fastfile`](fastlane/Fastfile) to see how to use this plu
 #### iOS Build
 ```ruby
 lane :build_ios do
-  instabug_build_ios_app(
+  luciq_build_ios_app(
     branch_name: "main",
-    instabug_api_key: ENV["INSTABUG_API_KEY"],
+    luciq_api_key: ENV["LUCIQ_API_KEY"],
     workspace: "MyApp.xcworkspace",
     scheme: "MyApp",
     export_method: "app-store",
@@ -52,9 +52,9 @@ end
 #### Android Build
 ```ruby
 lane :build_android do
-  instabug_build_android_app(
+  luciq_build_android_app(
     branch_name: "main",
-    instabug_api_key: ENV["INSTABUG_API_KEY"],
+    luciq_api_key: ENV["LUCIQ_API_KEY"],
     task: "assembleRelease",
     project_dir: "android/",
     properties: {
@@ -70,9 +70,9 @@ end
 #### iOS Upload
 ```ruby
 lane :upload_ios do
-  instabug_upload_to_app_store(
+  luciq_upload_to_app_store(
     branch_name: "main",
-    instabug_api_key: ENV["INSTABUG_API_KEY"],
+    luciq_api_key: ENV["LUCIQ_API_KEY"],
     ipa: "path/to/your/app.ipa",
     skip_screenshots: true,
     skip_metadata: true
@@ -83,9 +83,9 @@ end
 #### Android Upload
 ```ruby
 lane :upload_android do
-  instabug_upload_to_play_store(
+  luciq_upload_to_play_store(
     branch_name: "main",
-    instabug_api_key: ENV["INSTABUG_API_KEY"],
+    luciq_api_key: ENV["LUCIQ_API_KEY"],
     package_name: "com.example.app",
     aab: "path/to/your/app.aab",
     track: "internal",
